@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"testing"
@@ -16,15 +16,15 @@ func testIdGenerator(idgen idGenerator, t *testing.T) {
 }
 
 func TestIdGeneratorAtomic(t *testing.T) {
-	testIdGenerator(newIdGeneratorAtomic(), t)
+	testIdGenerator(NewIdGeneratorAtomic(), t)
 }
 
 func TestIdGeneratorMutex(t *testing.T) {
-	testIdGenerator(newIdGeneratorMutex(), t)
+	testIdGenerator(NewIdGeneratorMutex(), t)
 }
 
 func TestIdGeneratorChan(t *testing.T) {
-	testIdGenerator(newIdGeneratorChan(), t)
+	testIdGenerator(NewIdGeneratorChan(), t)
 }
 
 func benchmarkIdGenerator_Generate(idgen idGenerator, b *testing.B) {
@@ -40,25 +40,25 @@ func benchmarkIdGenerator_Current(idgen idGenerator, b *testing.B) {
 }
 
 func BenchmarkIdGeneratorAtomic_Current(b *testing.B) {
-	benchmarkIdGenerator_Current(newIdGeneratorAtomic(), b)
+	benchmarkIdGenerator_Current(NewIdGeneratorAtomic(), b)
 }
 
 func BenchmarkIdGeneratorAtomic_Generate(b *testing.B) {
-	benchmarkIdGenerator_Generate(newIdGeneratorAtomic(), b)
+	benchmarkIdGenerator_Generate(NewIdGeneratorAtomic(), b)
 }
 
 func BenchmarkIdGeneratorMutex_Current(b *testing.B) {
-	benchmarkIdGenerator_Current(newIdGeneratorMutex(), b)
+	benchmarkIdGenerator_Current(NewIdGeneratorMutex(), b)
 }
 
 func BenchmarkIdGeneratorMutex_Generate(b *testing.B) {
-	benchmarkIdGenerator_Generate(newIdGeneratorMutex(), b)
+	benchmarkIdGenerator_Generate(NewIdGeneratorMutex(), b)
 }
 
 func BenchmarkIdGeneratorChan_Current(b *testing.B) {
-	benchmarkIdGenerator_Current(newIdGeneratorChan(), b)
+	benchmarkIdGenerator_Current(NewIdGeneratorChan(), b)
 }
 
 func BenchmarkIdGeneratorChan_Generate(b *testing.B) {
-	benchmarkIdGenerator_Generate(newIdGeneratorChan(), b)
+	benchmarkIdGenerator_Generate(NewIdGeneratorChan(), b)
 }

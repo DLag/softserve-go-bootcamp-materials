@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 func testIdGenHandlerFunc(idgen idGenerator, t *testing.T) {
-	server := httptest.NewServer(newIdGenHandler(idgen))
+	server := httptest.NewServer(NewIdGenHandler(idgen))
 
 	defer server.Close()
 
@@ -33,13 +33,13 @@ func testIdGenHandlerFunc(idgen idGenerator, t *testing.T) {
 }
 
 func TestIdGenHandlerAtomic(t *testing.T) {
-	testIdGenHandlerFunc(newIdGeneratorAtomic(), t)
+	testIdGenHandlerFunc(NewIdGeneratorAtomic(), t)
 }
 
 func TestIdGenHandlerMutex(t *testing.T) {
-	testIdGenHandlerFunc(newIdGeneratorMutex(), t)
+	testIdGenHandlerFunc(NewIdGeneratorMutex(), t)
 }
 
 func TestIdGenHandlerChan(t *testing.T) {
-	testIdGenHandlerFunc(newIdGeneratorChan(), t)
+	testIdGenHandlerFunc(NewIdGeneratorChan(), t)
 }

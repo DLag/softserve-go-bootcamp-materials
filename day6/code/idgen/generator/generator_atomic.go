@@ -1,4 +1,4 @@
-package main
+package generator
 
 import "sync/atomic"
 
@@ -14,6 +14,6 @@ func (g *idGeneratorAtomic) Current() int32 {
 	return atomic.LoadInt32(&g.counter)
 }
 
-func newIdGeneratorAtomic() *idGeneratorAtomic {
+func NewIdGeneratorAtomic() *idGeneratorAtomic {
 	return new(idGeneratorAtomic)
 }

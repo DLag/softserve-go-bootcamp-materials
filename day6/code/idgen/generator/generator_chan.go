@@ -1,4 +1,4 @@
-package main
+package generator
 
 type idGeneratorChan struct {
 	counter     int32
@@ -30,7 +30,7 @@ func (g *idGeneratorChan) Current() int32 {
 	return <-g.getCurrent
 }
 
-func newIdGeneratorChan() *idGeneratorChan {
+func NewIdGeneratorChan() *idGeneratorChan {
 	g := idGeneratorChan{
 		generate:    make(chan struct{}),
 		current:     make(chan struct{}),

@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"sync"
@@ -22,6 +22,6 @@ func (g *idGeneratorMutex) Current() int32 {
 	return g.counter
 }
 
-func newIdGeneratorMutex() *idGeneratorMutex {
+func NewIdGeneratorMutex() *idGeneratorMutex {
 	return new(idGeneratorMutex)
 }

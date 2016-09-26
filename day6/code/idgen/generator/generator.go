@@ -1,4 +1,4 @@
-package main
+package generator
 
 type idGenerator interface {
 	Generate() int32
