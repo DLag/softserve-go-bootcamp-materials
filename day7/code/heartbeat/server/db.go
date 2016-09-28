@@ -76,7 +76,8 @@ func (v *idGenModelMysql) Generate() uint32 {
 func (v *idGenModelMysql) Current() uint32 {
 	if v.waitConnection() {
 		var id int
-		err := v.db.QueryRow("SELECT id FROM idgen32 WHERE stub=?", "a").Scan(&id)
+		row := v.db.QueryRow("SELECT id FROM idgen32 WHERE stub=? LIMIT 1", "a")
+		err := row.Scan(&id)
 		if err != nil {
 			log.Println("Error on SELECT: ", err)
 			return 0

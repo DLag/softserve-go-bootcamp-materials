@@ -1,13 +1,13 @@
 package main
 
 import (
-	"net/http"
-	"time"
 	"context"
-	"io/ioutil"
 	"io"
-	"strconv"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 type IdGenerator interface {
@@ -16,18 +16,18 @@ type IdGenerator interface {
 	Alive() bool
 }
 
-type peer struct{
-	Addr string
+type peer struct {
+	Addr  string
 	Alive bool
 }
 
 type IdGeneratorHTTP struct {
-	client http.Client
-	peers []peer
+	client  http.Client
+	peers   []peer
 	timeout time.Duration
 }
 
-func (idgen *IdGeneratorHTTP) AddPeer(addr string){
+func (idgen *IdGeneratorHTTP) AddPeer(addr string) {
 	for _, v := range idgen.peers {
 		if v.Addr == addr {
 			return
@@ -38,23 +38,24 @@ func (idgen *IdGeneratorHTTP) AddPeer(addr string){
 
 func (idgen *IdGeneratorHTTP) checkAlive() uint32 {
 	for {
-		for k, v:= range idgen.peers {
-		ctx, _ := context.WithTimeout(context.Background(), idgen.timeout)
-		req, err := http.NewRequest("GET", peer.Addr+"/generate", nil)
-		if err != nil {
-			log.Fatal("Wrong request")
+		for k, _ := range idgen.peers {
+			ctx, _ := context.WithTimeout(context.Background(), idgen.timeout)
+			req, err := http.NewRequest("GET", peer.Addr+"/generate", nil)
+			if err != nil {
+				log.Printf("Wrong request %q", req.URL)
+			}
+			req.WithContext(ctx)
+			r, err := idgen.client.Do(req)
+			if err != nil {
+				log.Printf("Error on request: %v, marking peer %q as dead", err, peer.Addr)
+				idgen.peers[k].Alive = false
+				continue
+			}
+			idgen.peers[k].Alive = true
 		}
-		req.WithContext(ctx)
-		r, err := idgen.client.Do(req)
-		if err != nil {
-			log.Printf("Error on request: %v, marking peer %q as dead", err, peer.Addr)
-			idgen[].Alive = false
-			continue
-		}
-
-		time.Sleep(time.Second*10)
+		time.Sleep(time.Second * 10)
 	}
-}
+}}
 
 func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 	ctx, _ := context.WithTimeout(context.Background(), idgen.timeout)
@@ -72,7 +73,7 @@ func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 	defer r.Body.Close()
 	buf, _ := ioutil.ReadAll(io.LimitReader(r.Body, 1024))
 	id, err := strconv.Atoi(string(buf))
-	if err !=nil {
+	if err != nil {
 		log.Printf("Error on converting: %v, marking peer %q as dead", err, peer.Addr)
 		peer.Alive = false
 		return 0
@@ -81,11 +82,11 @@ func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 }
 
 func (idgen *IdGeneratorHTTP) Generate() uint32 {
-	for k, v:= range idgen.peers {
+	for k, v := range idgen.peers {
 		if peer.Alive {
 			log.Printf("Trying to generate id on peer %q", v.Alive)
-			id:=idgen.tryGenerate(&idgen.peers[k])
-			if id>0 {
+			id := idgen.tryGenerate(&idgen.peers[k])
+			if id > 0 {
 				return id
 			}
 		}
