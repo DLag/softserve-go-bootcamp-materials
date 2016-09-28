@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"sync"
 )
 
 type IdGenerator interface {
@@ -25,6 +26,7 @@ type IdGeneratorHTTP struct {
 	client  http.Client
 	peers   []peer
 	timeout time.Duration
+	sync.RWMutex
 }
 
 func (idgen *IdGeneratorHTTP) AddPeer(addr string) {
@@ -83,7 +85,10 @@ func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 
 func (idgen *IdGeneratorHTTP) Generate() uint32 {
 	for k, v := range idgen.peers {
-		if peer.Alive {
+		idgen.RLock()
+		alive:=peer.Alive
+		idgen.RUnlock()
+		if alive {
 			log.Printf("Trying to generate id on peer %q", v.Alive)
 			id := idgen.tryGenerate(&idgen.peers[k])
 			if id > 0 {
@@ -93,3 +98,5 @@ func (idgen *IdGeneratorHTTP) Generate() uint32 {
 	}
 	return 0
 }
+
+//TODO: constructor, checkAlive goroutine, Final webserver, Tests

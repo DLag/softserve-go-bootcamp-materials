@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +32,8 @@ func newIdGenServerAppMysqlTest() *idGenServerAppMysqlTest {
 }
 
 func (app *idGenServerAppMysqlTest) TestWebServer(t *testing.T) {
+	assert := assert.New(t)
+
 	server := httptest.NewServer(newIdGenHandler(app.idgen))
 
 	defer server.Close()
@@ -45,16 +48,15 @@ func (app *idGenServerAppMysqlTest) TestWebServer(t *testing.T) {
 		}
 		expected := fmt.Sprint(i)
 		actual, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NotNil(err, err)
+
 		if expected != string(actual) {
 			t.Errorf("Expected the message %q, recieved %q\n", expected, string(actual))
 		}
 	}
-	if gen, cur, alive := app.idgen.(modelStub).GetCounters(); gen != 11 || cur != 0 || alive != 0 {
-		t.Fatal("Wrong counters\n")
-	}
+	gen, cur, alive := app.idgen.(modelStub).GetCounters()
+	assert.Equal([]uint32{gen, cur, alive}, []uint32{10, 0, 0}, "Wrong counters")
+
 }
 
 func TestWebServer(t *testing.T) {
