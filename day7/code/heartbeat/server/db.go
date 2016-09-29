@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/ziutek/mymysql/godrv"
 	"log"
+	_ "net/http/pprof"
 	"time"
 )
 

@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"log"
+	_ "net/http/pprof"
+)
 
 func main() {
 	log.Fatal(newIdGenServerAppMysql().Run())

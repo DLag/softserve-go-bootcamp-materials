@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 	"sync"
+	"time"
 )
 
 type IdGenerator interface {
@@ -35,21 +35,23 @@ func (idgen *IdGeneratorHTTP) AddPeer(addr string) {
 			return
 		}
 	}
-	idgen.peers = &peer{Addr: addr}
+	idgen.peers = append(idgen.peers, peer{Addr: addr})
+	log.Printf("Added peer %q", addr)
 }
 
 func (idgen *IdGeneratorHTTP) checkAlive() uint32 {
 	for {
-		for k, _ := range idgen.peers {
+		log.Println("Checking alive nodes...")
+		for k := range idgen.peers {
 			ctx, _ := context.WithTimeout(context.Background(), idgen.timeout)
-			req, err := http.NewRequest("GET", peer.Addr+"/generate", nil)
+			req, err := http.NewRequest("GET", idgen.peers[k].Addr+"/generate", nil)
 			if err != nil {
 				log.Printf("Wrong request %q", req.URL)
 			}
 			req.WithContext(ctx)
-			r, err := idgen.client.Do(req)
+			_, err = idgen.client.Do(req)
 			if err != nil {
-				log.Printf("Error on request: %v, marking peer %q as dead", err, peer.Addr)
+				log.Printf("Error on request: %v, marking peer %q as dead", err, idgen.peers[k].Addr)
 				idgen.peers[k].Alive = false
 				continue
 			}
@@ -57,7 +59,7 @@ func (idgen *IdGeneratorHTTP) checkAlive() uint32 {
 		}
 		time.Sleep(time.Second * 10)
 	}
-}}
+}
 
 func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 	ctx, _ := context.WithTimeout(context.Background(), idgen.timeout)
@@ -72,7 +74,11 @@ func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 		peer.Alive = false
 		return 0
 	}
-	defer r.Body.Close()
+	defer func() {
+		buf := make([]byte, 1024)
+		r.Body.Read(buf)
+		r.Body.Close()
+	}()
 	buf, _ := ioutil.ReadAll(io.LimitReader(r.Body, 1024))
 	id, err := strconv.Atoi(string(buf))
 	if err != nil {
@@ -80,23 +86,33 @@ func (idgen *IdGeneratorHTTP) tryGenerate(peer *peer) uint32 {
 		peer.Alive = false
 		return 0
 	}
-	return int32(id)
+	return uint32(id)
 }
 
 func (idgen *IdGeneratorHTTP) Generate() uint32 {
-	for k, v := range idgen.peers {
+	for k := range idgen.peers {
 		idgen.RLock()
-		alive:=peer.Alive
+		alive := idgen.peers[k].Alive
 		idgen.RUnlock()
 		if alive {
-			log.Printf("Trying to generate id on peer %q", v.Alive)
+			//log.Printf("Trying to generate id on peer %q", idgen.peers[k].Addr)
 			id := idgen.tryGenerate(&idgen.peers[k])
 			if id > 0 {
+				log.Printf("ID: %d, peer %q", id, idgen.peers[k].Addr)
 				return id
 			}
 		}
 	}
+	log.Println("No nodes online")
 	return 0
 }
 
-//TODO: constructor, checkAlive goroutine, Final webserver, Tests
+func newIdGeneratorHTTP(timeout time.Duration) *IdGeneratorHTTP {
+	g := &IdGeneratorHTTP{
+		timeout: timeout,
+		client:  http.Client{Timeout: timeout},
+		peers:   make([]peer, 0),
+	}
+	go g.checkAlive() //Starting checker
+	return g
+}

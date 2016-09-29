@@ -48,7 +48,9 @@ func (app *idGenServerAppMysqlTest) TestWebServer(t *testing.T) {
 		}
 		expected := fmt.Sprint(i)
 		actual, err := ioutil.ReadAll(resp.Body)
-		assert.NotNil(err, err)
+		if err != nil {
+			t.Error(err)
+		}
 
 		if expected != string(actual) {
 			t.Errorf("Expected the message %q, recieved %q\n", expected, string(actual))
