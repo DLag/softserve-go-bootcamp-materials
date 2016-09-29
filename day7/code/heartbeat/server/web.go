@@ -24,11 +24,11 @@ func newHeartbeatHandler(model idGenModel) *heartbeatHandler {
 }
 
 type idGenHandler struct {
-	model idGenModel
+	f func() uint32
 }
 
 func (h *idGenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	id := h.model.Generate()
+	id := h.f()
 	if id > 0 {
 		w.WriteHeader(http.StatusOK) // 200
 	} else {
@@ -37,6 +37,6 @@ func (h *idGenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%d", id)
 }
 
-func newIdGenHandler(model idGenModel) *idGenHandler {
-	return &idGenHandler{model: model}
+func newIdGenHandler(f func() uint32) *idGenHandler {
+	return &idGenHandler{f: f}
 }
